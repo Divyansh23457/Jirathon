@@ -34,7 +34,7 @@ export async function fetchJiraStory(
   const config: AxiosRequestConfig = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `https://${encodeURIComponent(host)}/rest/api/3/issue/${encodeURIComponent(
+    url: `/jira/${encodeURIComponent(host)}/rest/api/3/issue/${encodeURIComponent(
       key,
     )}?fields=summary,description,issuetype`,
     headers: {

@@ -31,15 +31,13 @@ export async function fetchJiraStory(
 
   const credentials = btoa(`${email}:${apiToken}`);
 
-  const proxyUrl = `/jira/${encodeURIComponent(host)}/rest/api/3/issue/${encodeURIComponent(
-    key,
-  )}?fields=summary,description,issuetype`;
+  const restPath = `rest/api/3/issue/${encodeURIComponent(key)}?fields=summary,description,issuetype`;
+  const proxyUrl = `/jira/${encodeURIComponent(host)}/${restPath}`;
+  const upstreamUrl = `https://${host}/${restPath}`;
 
   console.log("[Jira] ▶ Request", {
-    proxyUrl,
-    resolvedUrl: `${window.location.origin}${proxyUrl}`,
-    host,
-    key,
+    "browser calls (same-origin, no CORS)": `${window.location.origin}${proxyUrl}`,
+    "edge function forwards to (server-side)": upstreamUrl,
   });
 
   const config: AxiosRequestConfig = {

@@ -26,14 +26,19 @@ export default function EstimatorForm({ loading, onSubmit }: Props) {
       if (saved.domain) setDomain(saved.domain);
       if (saved.email) setEmail(saved.email);
       if (saved.apiToken) setApiToken(saved.apiToken);
-    } catch {
-      /* ignore */
+      console.log("[EstimatorForm] Credentials loaded from storage");
+    } catch (err) {
+      console.error("[EstimatorForm] Error loading credentials", err);
     }
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!domain || !email || !apiToken || !storyId) return;
+    if (!domain || !email || !apiToken || !storyId) {
+      console.warn("[EstimatorForm] Form submission blocked: missing fields");
+      return;
+    }
+    console.log("[EstimatorForm] Saving credentials and submitting form");
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ domain, email, apiToken }),

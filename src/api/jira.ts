@@ -31,12 +31,21 @@ export async function fetchJiraStory(
 
   const credentials = btoa(`${email}:${apiToken}`);
 
+  const proxyUrl = `/jira/${encodeURIComponent(host)}/rest/api/3/issue/${encodeURIComponent(
+    key,
+  )}?fields=summary,description,issuetype`;
+
+  console.log("[Jira] ▶ Request", {
+    proxyUrl,
+    resolvedUrl: `${window.location.origin}${proxyUrl}`,
+    host,
+    key,
+  });
+
   const config: AxiosRequestConfig = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `/jira/${encodeURIComponent(host)}/rest/api/3/issue/${encodeURIComponent(
-      key,
-    )}?fields=summary,description,issuetype`,
+    url: proxyUrl,
     headers: {
       Accept: "application/json",
       Authorization: `Basic ${credentials}`,
@@ -45,17 +54,36 @@ export async function fetchJiraStory(
 
   try {
     const response = await axios.request(config);
+    console.log("[Jira] ◀ Response", {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+    });
+
     const data = response.data;
     const description = adfToPlainText(data?.fields?.description);
 
-    return {
+    const story = {
       key: data.key,
       summary: data?.fields?.summary ?? "(no summary)",
       issueType: data?.fields?.issuetype?.name ?? "Story",
       description,
     };
+    console.log("[Jira] ✓ Story parsed", story);
+    return story;
   } catch (err) {
     if (err instanceof AxiosError) {
+      console.error("[Jira] ✗ Axios error", {
+        message: err.message,
+        status: err.response?.status,
+        responseData: err.response?.data,
+        responseHeaders: err.response?.headers,
+        requestUrl: err.config?.url,
+        requestHeaders: {
+          ...err.config?.headers,
+          Authorization: "[redacted]",
+        },
+      });
       const status = err.response?.status;
       if (status === 401)
         throw new Error("Unauthorized. Check your email and API token.");
@@ -68,6 +96,7 @@ export async function fetchJiraStory(
       if (status) throw new Error(`Jira API error (${status}).`);
       throw new Error(err.message || "Network error reaching Jira.");
     }
+    console.error("[Jira] ✗ Unexpected error", err);
     throw err;
   }
 }

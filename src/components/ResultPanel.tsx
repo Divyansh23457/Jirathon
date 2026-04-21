@@ -13,10 +13,11 @@ export default function ResultPanel({ record }: Props) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(record.result);
+      console.log("[ResultPanel] Result copied to clipboard", record.storyKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.error("[ResultPanel] Error copying to clipboard", err);
     }
   };
 

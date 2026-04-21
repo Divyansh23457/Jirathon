@@ -64,6 +64,7 @@ export async function estimateStory(
     );
   }
 
+  console.log("[Gemini] Estimating story", story.key);
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model: MODEL,
@@ -72,5 +73,6 @@ export async function estimateStory(
 
   const text = response.text?.trim();
   if (!text) throw new Error("Gemini returned an empty response.");
+  console.log("[Gemini] Estimation complete for", story.key);
   return text;
 }

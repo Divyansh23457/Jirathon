@@ -30,9 +30,11 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    console.log("[App] History updated", { count: history.length });
   }, [history]);
 
   const handleSubmit = async (values: FormValues) => {
+    console.log("[App] Form submitted", { domain: values.domain, storyId: values.storyId });
     setLoading(true);
     setError(null);
     setActive(null);
@@ -56,10 +58,13 @@ export default function App() {
         result,
         createdAt: Date.now(),
       };
+      console.log("[App] Estimation completed", { storyKey: story.key });
       setActive(record);
       setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error("[App] Error during estimation", errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
       setStatus(null);

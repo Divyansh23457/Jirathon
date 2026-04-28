@@ -41,7 +41,6 @@ export default function App() {
     try {
       setStatus("Fetching story from Jira…");
       const story = await fetchJiraStory(
-        values.domain,
         values.email,
         values.apiToken,
         values.storyId,

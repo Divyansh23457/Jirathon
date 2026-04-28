@@ -1,6 +1,58 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
+const JIRA_DOMAIN = "triharder1303.atlassian.net";
+
+/**
+ * Dev-mode proxy for /api/jira/ that forwards to the hardcoded Jira domain.
+ * In production, Vercel routes this to the Edge function.
+ */
+function apiJiraProxy(): Plugin {
+  return {
+    name: "jirathon:api-jira-proxy",
+    configureServer(server) {
+      server.middlewares.use("/api/jira", async (req, res) => {
+        try {
+          const target = `https://${JIRA_DOMAIN}${req.url}`;
+          const headers: Record<string, string> = {};
+          for (const [k, v] of Object.entries(req.headers)) {
+            if (typeof v === "string" && k.toLowerCase() !== "host") {
+              headers[k] = v;
+            }
+          }
+
+          console.log("[dev-proxy] Forwarding", { from: req.url, to: target });
+
+          const upstream = await fetch(target, {
+            method: req.method ?? "GET",
+            headers,
+          });
+
+          res.statusCode = upstream.status;
+          upstream.headers.forEach((value, key) => {
+            // Hop-by-hop headers shouldn't be forwarded.
+            if (
+              key === "transfer-encoding" ||
+              key === "content-encoding" ||
+              key === "content-length" ||
+              key === "connection"
+            )
+              return;
+            res.setHeader(key, value);
+          });
+          const buf = Buffer.from(await upstream.arrayBuffer());
+          res.end(buf);
+        } catch (err) {
+          res.statusCode = 502;
+          res.end(
+            `Jira proxy error: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      });
+    },
+  };
+}
+
 /**
  * Dynamic Jira proxy.
  * The browser calls /jira/<domain>/<rest-of-path>, e.g.
@@ -63,5 +115,5 @@ function jiraProxy(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), jiraProxy()],
+  plugins: [react(), apiJiraProxy(), jiraProxy()],
 });

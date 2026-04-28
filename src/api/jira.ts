@@ -18,9 +18,9 @@ export async function fetchJiraStory(
 
   const credentials = btoa(`${email}:${apiToken}`);
 
-  const url = `https://${JIRA_DOMAIN}/rest/api/3/issue/${encodeURIComponent(key)}?fields=summary,description,issuetype`;
+  const url = `/api/jira/rest/api/3/issue/${encodeURIComponent(key)}?fields=summary,description,issuetype`;
 
-  console.log("[Jira] ▶ Request", { url });
+  console.log("[Jira] ▶ Request", { url, domain: JIRA_DOMAIN });
 
   const config: AxiosRequestConfig = {
     method: "get",

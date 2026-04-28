@@ -22,6 +22,10 @@ const HOP_BY_HOP = new Set([
 ]);
 
 export default async function handler(req: Request): Promise<Response> {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders() });
+  }
+
   try {
     const url = new URL(req.url);
     // pathname looks like /api/jira/<host>/<...rest>
@@ -73,6 +77,9 @@ export default async function handler(req: Request): Promise<Response> {
     upstream.headers.forEach((value, key) => {
       if (!HOP_BY_HOP.has(key.toLowerCase())) respHeaders.set(key, value);
     });
+    respHeaders.set("Access-Control-Allow-Origin", "*");
+    respHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    respHeaders.set("Access-Control-Allow-Headers", "*");
 
     return new Response(upstream.body, {
       status: upstream.status,
@@ -83,4 +90,12 @@ export default async function handler(req: Request): Promise<Response> {
     console.error("[proxy] ✗ Unhandled error:", message, err);
     return new Response(`Jira proxy error: ${message}`, { status: 502 });
   }
+}
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "*",
+  };
 }

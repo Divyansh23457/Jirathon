@@ -33,6 +33,7 @@ export async function fetchJiraStory(
 
   const restPath = `rest/api/3/issue/${encodeURIComponent(key)}?fields=summary,description,issuetype`;
   const proxyUrl = `/jira/${encodeURIComponent(host)}/${restPath}`;
+  console.log('proxy Url', proxyUrl);
   const upstreamUrl = `https://${host}/${restPath}`;
 
   console.log("[Jira] ▶ Request", {

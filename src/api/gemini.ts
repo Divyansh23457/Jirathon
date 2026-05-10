@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { JiraStory } from "../types";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-2.5-flash-lite";
 
 function buildPrompt(story: JiraStory): string {
   return `### The Prompt
